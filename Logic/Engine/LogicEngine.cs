@@ -8,12 +8,10 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-// a logic variable is simply a label
-using LogicVariable = System.String;
 // a stream is a series of states
-using Stream = System.Collections.Generic.IEnumerable<Logic.State>;
+using Stream = System.Collections.Generic.IEnumerable<Logic.Engine.State>;
 
-namespace Logic
+namespace Logic.Engine
 {
     /*
      * Set up some types / aliases so our function signatures match what's in the whitepaper.
@@ -23,10 +21,17 @@ namespace Logic
     using Substitution = ImmutableDictionary<LogicVariable, object>;
     // a goal can either succeed or fail
     using Goal = Func<State, Stream>;
+    using System.Linq.Expressions;
+
     class State
     {
         public Substitution Substitution { get; set; } = Substitution.Empty;
         public int FreshVariableCounter { get; set; }
+    }
+    class LogicVariable
+    {
+        public string Name { get; set; }
+        public override string ToString() => Name;
     }
 
     static class LogicEngine
@@ -67,7 +72,7 @@ namespace Logic
             var uvar = u as LogicVariable;
             var vvar = v as LogicVariable;
             // If the two terms walk to the same variable, the original substitution is returned unchanged
-            if (uvar != null && vvar != null && uvar == vvar)
+            if (uvar != null && vvar != null && uvar.Name == vvar.Name)
             {
                 return s;
             }
@@ -130,15 +135,21 @@ namespace Logic
         /// The call/fresh goal constructor takes a unary function f whose body
         /// is a goal, and itself returns a goal
         /// </summary>
-        public static Goal CallFresh(Func<LogicVariable, Goal> f)
+        public static Goal CallFresh(Expression<Func<LogicVariable, Goal>> ff)
         {
             // This returned goal, when provided a state s/c...
             return sc =>
             {
                 var c = sc.FreshVariableCounter;
+                var f = ff.Compile();
+
                 return f
                     // binds the formal parameter of f to a new logic variable,
-                    .Invoke(f.Method.GetParameters()[0].Name)
+                    .Invoke(new LogicVariable
+                    {
+                        Name = ff.Parameters[0].Name
+                        //Name = f.Method.GetParameters()[0].Name
+                    })
                     // and passes a state, with the substitution it originally received 
                     // and a newly incremented fresh-variable counter, c, to the goal
                     // that is the body of f.

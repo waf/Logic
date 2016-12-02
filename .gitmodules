@@ -1,0 +1,6 @@
+[submodule "IQToolkit"]
+	path = IQToolkit
+	url = https://github.com/mattwar/iqtoolkit.git
+[submodule "Dependencies/IQToolkit"]
+	path = Dependencies/IQToolkit
+	url = https://github.com/mattwar/iqtoolkit.git
