@@ -11,15 +11,37 @@ namespace Logic.Linq
 {
     class LinqToLogicVisitor : IQToolkit.ExpressionVisitor
     {
-        Expression result = null;
+        private readonly IDictionary<string, Expression> LogicVariableParameters = new Dictionary<string, Expression>();
 
         public Expression Translate(Expression input)
         {
+            var methodCall = input as MethodCallExpression;
+            // for simplicity, if we don't have a select call, add a passthrough select call.
+            if(methodCall?.Method.Name != "Select")
+            {
+                var selectType = input.Type.GenericTypeArguments[0];
+                var lambdaParam = ((LambdaExpression)StripQuotes(methodCall.Arguments[1])).Parameters[0].Name;
+                var identityParam = Expression.Parameter(selectType, lambdaParam);
+                var identity = Expression.Lambda(identityParam, identityParam);
+
+                var wrappedInput = Expression.Call(
+                    QueryableSelect.MakeGenericMethod(selectType, selectType),
+                    input,
+                    identity);
+                return this.Visit(wrappedInput);
+            }
             return this.Visit(input);
         }
 
         static MethodInfo CallFresh = typeof(LogicEngine).GetMethod(nameof(LogicEngine.CallFresh), BindingFlags.Public | BindingFlags.Static);
         static MethodInfo Eq = typeof(LogicEngine).GetMethod(nameof(LogicEngine.Eq), BindingFlags.Public | BindingFlags.Static);
+        static MethodInfo ExtractVariable = typeof(State).GetMethod(nameof(State.Extract), BindingFlags.Public | BindingFlags.Static);
+        static MethodInfo QueryableSelect = typeof(Queryable)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == "Select");
+        static MethodInfo EnumerableSelect = typeof(Enumerable)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .First(m => m.Name == "Select");
 
         protected override Expression VisitMethodCall(MethodCallExpression m)
         {
@@ -29,10 +51,28 @@ namespace Logic.Linq
                 var freshLambda = this.ConvertLambdaToCallFresh(whereLambda as LambdaExpression);
                 return Expression.Call(CallFresh, freshLambda);
             }
+            if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Select")
+            {
+                var args = Visit(m.Arguments[0]);
+                var selectLambda = StripQuotes(m.Arguments[1]) as LambdaExpression;
+
+                var stateParam = Expression.Parameter(typeof(State), "s");
+                var selectorParams = selectLambda.Parameters
+                    .Select(param => Expression.Convert(
+                                        Expression.Call(ExtractVariable, stateParam, Expression.Constant(param.Name)),
+                                        param.Type))
+                    .ToArray();
+                var selectorLambda = Expression.Lambda(Expression.Invoke(selectLambda, selectorParams), stateParam);
+
+                var outerStateParam = Expression.Parameter(typeof(State), "initialState");
+                var result = Expression.Lambda(
+                    Expression.Call(EnumerableSelect.MakeGenericMethod(typeof(State), selectLambda.ReturnType), Expression.Invoke(args, outerStateParam), selectorLambda),
+                    outerStateParam
+                );
+                return result;
+            }
             return Visit(m.Arguments[0]);
         }
-
-        private readonly IDictionary<string, Expression> LogicVariableParameters = new Dictionary<string, Expression>();
 
         private Expression ConvertLambdaToCallFresh(LambdaExpression lambda)
         {

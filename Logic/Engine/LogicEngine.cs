@@ -23,18 +23,22 @@ namespace Logic.Engine
     using Goal = Func<State, Stream>;
     using System.Linq.Expressions;
 
-    class State
+    public class State
     {
         public Substitution Substitution { get; set; } = Substitution.Empty;
         public int FreshVariableCounter { get; set; }
+        public static object Extract(State s, string name)
+        {
+            return s.Substitution.First(var => var.Key.Name == name).Value;
+        }
     }
-    class LogicVariable
+    public class LogicVariable
     {
         public string Name { get; set; }
         public override string ToString() => Name;
     }
 
-    static class LogicEngine
+    public static class LogicEngine
     {
         /// <summary>
         /// The walk operator searches for a variable's value in the substitution

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logic", "Logic\Logic.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IQToolkit", "Dependencies\IQToolkit\src\IQToolkit\IQToolkit.csproj", "{0DA62A7C-3B40-456F-A4B2-B3E19ED4080E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logic.Tests", "Logic.Tests\Logic.Tests.csproj", "{CF5D2CF3-A6FF-4ABC-AA7F-A745A69FFD01}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0DA62A7C-3B40-456F-A4B2-B3E19ED4080E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DA62A7C-3B40-456F-A4B2-B3E19ED4080E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DA62A7C-3B40-456F-A4B2-B3E19ED4080E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF5D2CF3-A6FF-4ABC-AA7F-A745A69FFD01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF5D2CF3-A6FF-4ABC-AA7F-A745A69FFD01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF5D2CF3-A6FF-4ABC-AA7F-A745A69FFD01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF5D2CF3-A6FF-4ABC-AA7F-A745A69FFD01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

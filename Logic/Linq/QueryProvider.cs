@@ -14,7 +14,7 @@ namespace Logic.Linq
         public override object Execute(Expression expression)
         {
             var logicExpression = new LinqToLogicVisitor().Translate(expression);
-            var logicFuncExpression = Expression.Lambda<Func<Func<State, IEnumerable<State>>>>(logicExpression);
+            var logicFuncExpression = Expression.Lambda<Func<Func<State, object>>>(logicExpression);
             var compiled = logicFuncExpression.Compile();
             var logicProgram = compiled();
             var answers = logicProgram(new State());

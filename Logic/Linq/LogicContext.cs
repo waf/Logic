@@ -1,10 +1,6 @@
-﻿using IQToolkit;
+﻿using System;
 using Logic.Engine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using IQToolkit;
 
 namespace Logic.Linq
 {
@@ -13,14 +9,9 @@ namespace Logic.Linq
         readonly QueryProvider provider = new QueryProvider();
         public Query<T> Variable<T>() => new Query<T>(provider);
 
-        internal object Possibilities(int x)
+        internal State Results()
         {
-            return null;
-        }
-
-        internal State Possibilities()
-        {
-            return null;
+            return new State();
         }
     }
 }

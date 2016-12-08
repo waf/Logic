@@ -3,7 +3,6 @@ using Logic.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Logic.Engine.LogicEngine;
 
 namespace Logic
 {
@@ -11,28 +10,32 @@ namespace Logic
     {
         static void Main()
         {
-            // non linq-style query
-            var facts = CallFresh(x =>
-                CallFresh(y =>
-                    Conj(
-                        Eq(x, 5),
-                        Eq(x, y)
-                    )
-                )
-            );
+            //// non linq-style query
+            //var facts = CallFresh(x =>
+            //    CallFresh(y =>
+            //        Conj(
+            //            Eq(x, 5),
+            //            Eq(x, y)
+            //        )
+            //    )
+            //);
 
-            // run the logic engine
-            var result = facts(new State()).ToArray();
-            PrettyPrint(result);
+            //// run the logic engine
+            //var result = facts(new State()).ToArray();
+            //PrettyPrint(result);
 
             // linq style query
             var program = new LogicContext();
             var linqResults = from x in program.Variable<int>()
                               where x == 5
-                              select program.Possibilities();
+                              select new { x };
+            linqResults.ToArray();
 
-
-            PrettyPrint(linqResults.ToArray());
+            var program2 = new LogicContext();
+            var linqResults2 = from x in program2.Variable<int>()
+                               where x == 5
+                               select x;
+            var results = linqResults2.ToArray();
 
             Console.ReadKey();
         }
