@@ -35,6 +35,8 @@ namespace Logic.Linq
 
         static MethodInfo CallFresh = typeof(LogicEngine).GetMethod(nameof(LogicEngine.CallFresh), BindingFlags.Public | BindingFlags.Static);
         static MethodInfo Eq = typeof(LogicEngine).GetMethod(nameof(LogicEngine.Eq), BindingFlags.Public | BindingFlags.Static);
+        static MethodInfo Disj = typeof(LogicEngine).GetMethod(nameof(LogicEngine.Disj), BindingFlags.Public | BindingFlags.Static);
+        static MethodInfo Conj = typeof(LogicEngine).GetMethod(nameof(LogicEngine.Conj), BindingFlags.Public | BindingFlags.Static);
         static MethodInfo ExtractVariable = typeof(State).GetMethod(nameof(State.Extract), BindingFlags.Public | BindingFlags.Static);
         static MethodInfo QueryableSelect = typeof(Queryable)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -102,12 +104,21 @@ namespace Logic.Linq
 
         protected override Expression VisitBinary(BinaryExpression b)
         {
+            Expression left, right;
             switch(b.NodeType)
             {
                 case ExpressionType.Equal:
-                    var left = Expression.Convert(Visit(b.Left), typeof(object));
-                    var right = Expression.Convert(Visit(b.Right), typeof(object));
+                    left = Expression.Convert(Visit(b.Left), typeof(object));
+                    right = Expression.Convert(Visit(b.Right), typeof(object));
                     return Expression.Call(Eq, left, right);
+                case ExpressionType.OrElse:
+                    left = Expression.Convert(Visit(b.Left), typeof(Func<State, IEnumerable<State>>));
+                    right = Expression.Convert(Visit(b.Right), typeof(Func<State, IEnumerable<State>>));
+                    return Expression.Call(Disj, left, right);
+                case ExpressionType.AndAlso:
+                    left = Expression.Convert(Visit(b.Left), typeof(Func<State, IEnumerable<State>>));
+                    right = Expression.Convert(Visit(b.Right), typeof(Func<State, IEnumerable<State>>));
+                    return Expression.Call(Conj, left, right);
             }
             return base.VisitBinary(b);
         }
